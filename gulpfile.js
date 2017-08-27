@@ -7,21 +7,73 @@ var gulp = require('gulp'),
   source = require('vinyl-source-stream'),
   tsify = require("tsify"),
   uglify = require('gulp-uglify'),
-  buffer = require('vinyl-buffer')
+  buffer = require('vinyl-buffer'),
+  del = require('del'),
+  concat = require('gulp-concat')
+  runSequence = require('run-sequence')
 
   //tsProject = typescript.createProject('./tsconfig.json')//require('./tsconfig.json')
 ;
 
+runSequence.options.ignoreUndefinedTasks = true;
 
-var appSrc = 'app/',
-  tsSrc = 'src/typescript/';
+// sass
+// https://stackoverflow.com/questions/35062852/npm-vs-bower-vs-browserify-vs-gulp-vs-grunt-vs-webpack
+
+// https://blog.dmbcllc.com/using-gulp-to-bundle-minify-and-cache-bust/
+
+// concat, uglify, imagemin
+// https://github.com/gulpjs/gulp
+
+var paths = {};
+paths.root = '';
+
+paths.app = paths.root + 'app/';
+paths.appJs = paths.app + 'js/';
+paths.appCss = paths.app + 'css/';
+paths.appJsBundleName = 'app-scripts.min.js';
+
+paths.src = paths.root + 'src/';
+paths.srcTs = paths.src + 'typescript/';
+paths.srcJs = paths.src + 'javascript/';
+paths.srcTsTmp = paths.srcTs + 'tmp/';
+paths.srcInitTsFile = paths.srcTs + 'boot.ts';
+paths.srcTsJsBundleName = 'js-bundle.js';//'app-scripts-bundle.js';
+
+
+paths.srcJsFiles = [
+  paths.srcJs + 'spin.js',
+  paths.srcTsTmp + paths.srcTsJsBundleName,
+  paths.srcJs + 'main.js'
+];
+
+
+paths.srcCss = paths.src + 'css/';
+paths.srcSass = paths.src + 'sass/';
+
+
+var removeEndSlash = function(str) {
+  return str.replace(/\/$/, '');
+};
+
+gulp.task('clean-ts', function() {
+  return del.sync([
+    paths.appJs + '/**', '!' + removeEndSlash(paths.appJs),
+    paths.srcTsTmp + '/**', '!' + removeEndSlash(paths.srcTsTmp)
+  ]);
+});
+gulp.task('clean-js', function() {
+  return del.sync([
+    paths.appJs + '/**', '!' + removeEndSlash(paths.appJs)
+  ]);
+});
 
 gulp.task('html', function() {
-  gulp.src(appSrc + '**/*.html');
+  gulp.src(paths.app + '**/*.html');
 });
 
 gulp.task('css', function() {
-  gulp.src(appSrc + '**/*.css');
+  gulp.src(paths.app + '**/*.css');
 });
 
 gulp.task('copylibs', function () {
@@ -40,7 +92,18 @@ gulp.task('copylibs', function () {
 //    .pipe(gulp.dest(appSrc + 'js/lib/angular2'));
 });
 
-gulp.task("typescript", function () {
+gulp.task('pack-js', function() {
+  return gulp
+    .src(paths.srcJsFiles)
+    .pipe(sourcemaps.init())
+    .pipe(concat(paths.appJsBundleName))
+    .pipe(uglify())
+    .pipe(sourcemaps.write('./'))
+    .pipe(gulp.dest(paths.appJs));
+
+});
+
+gulp.task("seq-run-tscript", function () {
 
 //  return gulp
 //    .src(tsSrc + '**/*.ts')
@@ -55,10 +118,33 @@ gulp.task("typescript", function () {
 //    .pipe(tsProject())
 //    .js.pipe(gulp.dest(appSrc + '/js'));
 
+// ------------------------------------------------------------------------
+// var imagemin = require('gulp-imagemin');
+
+
+  // Images function with caching added:
+//  function imagesFn() {
+//    gulp.src(paths.source + '/images/**/*.+(png|jpg|gif|svg)')
+//      .pipe(cache(imagemin({optimizationLevel: 5})))
+//      .pipe(gulp.dest(paths.build + '/images'));
+
+
+//  }
+
+  // Images task:
+//  gulp.task('images', imagesFn);
+
+  // Watch for changes on files:
+//  gulp.task('watch', function() {
+//    gulp.watch(paths.source + '/images/**/*.+(png|jpg|gif|svg)', ['images']);
+//    gulp.watch(paths.source + '/scripts/**/*.js', ['scripts']);
+//  });
+  // ------------------------------------------------------------------------
+
   return browserify({
     basedir: '.',
     debug: true,
-    entries: [tsSrc + "boot.ts"],
+    entries: [paths.srcInitTsFile],
     cache: {},
     packageCache: {}
   })
@@ -67,26 +153,32 @@ gulp.task("typescript", function () {
       presets: ['es2015'],
       extensions: ['.ts']
     })
+//    .pipe(gulp.src(jsSrc + '**/*.js'))
     .bundle()
-    .pipe(source('app-scripts-bundle.js'))
+    .pipe(source(paths.srcTsJsBundleName))
     .pipe(buffer())
-    .pipe(sourcemaps.init({loadMaps: true}))
-    .pipe(uglify())
-    .pipe(sourcemaps.write('./'))
-    .pipe(gulp.dest(appSrc + '/js'));
+//    .pipe(sourcemaps.init({loadMaps: false}))
+//    .pipe(uglify())
+//    .pipe(sourcemaps.write('./'))
+    .pipe(gulp.dest(paths.srcTsTmp));
+});
+
+gulp.task("typescript", ['clean-ts'], function () {
+  runSequence('seq-run-tscript', 'pack-js');
 });
 
 gulp.task('watch', function() {
-  gulp.watch(tsSrc + '**/*.ts', ['typescript']);
-  gulp.watch(appSrc + 'css/*.css', ['css']);
-  gulp.watch(appSrc + '**/*.html', ['html']);
+  gulp.watch(paths.srcTs + '**/*.ts', ['typescript']);
+  gulp.watch(paths.srcJs + '**/*.js', ['clean-js', 'pack-js']);
+  gulp.watch(paths.appCss + '**/*.css', ['css']);
+  gulp.watch(paths.app + '**/*.html', ['html']);
 });
 
 gulp.task('webserver', function () {
-  gulp.src(appSrc)
+  gulp.src(paths.app)
     .pipe(webserver({
       liveload: true,
-      open: true,
+      open: false,
       port: 8000
     }));
 });
@@ -94,5 +186,7 @@ gulp.task('webserver', function () {
 //gulp.task('default', ['copylibs']);
 //gulp.task('default', ['copylibs', 'typescript']);
 //gulp.task('default', ['copylibs', 'watch', 'webserver']);
-gulp.task('default', ['copylibs', 'typescript', 'watch', 'webserver']);
+gulp.task('default', function() {
+  runSequence('clean-ts', 'copylibs', 'typescript', 'watch', 'webserver');
+});
 //gulp.task('default', ['copylibs', 'typescript', 'watch', 'webserver']);

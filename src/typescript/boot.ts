@@ -26,6 +26,6 @@ function showHello(divName: string, name: string) {
   const elt = document.getElementById(divName);
   elt.innerText = sayHello(name);
 }
-showHello("greeting", "TypeScript 1.0.3");
+showHello("greeting", "TypeScript 1.0.4");
 
 //console.log('Hello boot...');
