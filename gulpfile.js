@@ -12,8 +12,7 @@ var gulp = require('gulp'),
   concat = require('gulp-concat'),
   runSequence = require('run-sequence'),
   sass = require('gulp-sass'),
-  minifyCss = require('gulp-minify-css'),
-  gulpCompass = require('gulp-compass-compile')
+  minifyCss = require('gulp-minify-css')
 
   //tsProject = typescript.createProject('./tsconfig.json')//require('./tsconfig.json')
 ;
