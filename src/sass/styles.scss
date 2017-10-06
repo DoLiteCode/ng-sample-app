@@ -1,0 +1,20 @@
+@import "partials/variables";
+@import "partials/normalize";
+
+* {
+  //@include box-sizing(border-box);
+}
+
+#main-wrap {
+  position: relative;
+  a {
+    color: $brown;
+    &:hover {
+      color: $orange;
+    }
+  }
+
+  h1 {
+    margin: 0px;
+  }
+}

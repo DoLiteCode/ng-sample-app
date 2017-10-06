@@ -9,8 +9,11 @@ var gulp = require('gulp'),
   uglify = require('gulp-uglify'),
   buffer = require('vinyl-buffer'),
   del = require('del'),
-  concat = require('gulp-concat')
-  runSequence = require('run-sequence')
+  concat = require('gulp-concat'),
+  runSequence = require('run-sequence'),
+  sass = require('gulp-sass'),
+  minifyCss = require('gulp-minify-css'),
+  gulpCompass = require('gulp-compass-compile')
 
   //tsProject = typescript.createProject('./tsconfig.json')//require('./tsconfig.json')
 ;
@@ -32,24 +35,28 @@ paths.app = paths.root + 'app/';
 paths.appJs = paths.app + 'js/';
 paths.appCss = paths.app + 'css/';
 paths.appJsBundleName = 'app-scripts.min.js';
+paths.appCssBundleName = 'app-styles.css';
 
 paths.src = paths.root + 'src/';
 paths.srcTs = paths.src + 'typescript/';
 paths.srcJs = paths.src + 'javascript/';
-paths.srcTsTmp = paths.srcTs + 'tmp/';
+//paths.srcTsBuild = paths.srcTs + 'build/';
 paths.srcInitTsFile = paths.srcTs + 'boot.ts';
 paths.srcTsJsBundleName = 'js-bundle.js';//'app-scripts-bundle.js';
 
 
-paths.srcJsFiles = [
-  paths.srcJs + 'spin.js',
-  paths.srcTsTmp + paths.srcTsJsBundleName,
-  paths.srcJs + 'main.js'
-];
+//paths.srcJsFiles = [
+//  paths.srcJs + 'spin.js',
+//  paths.srcTsBuild + paths.srcTsJsBundleName,
+//  paths.srcJs + 'main.js'
+//];
 
 
 paths.srcCss = paths.src + 'css/';
 paths.srcSass = paths.src + 'sass/';
+paths.srcSassBuild = paths.srcSass + 'build/';
+//paths.srcInitSassFile = paths.srcTs + 'boot.ts';
+paths.srcSassCssBundleName = 'css-bundle.css';
 
 
 var removeEndSlash = function(str) {
@@ -58,13 +65,20 @@ var removeEndSlash = function(str) {
 
 gulp.task('clean-ts', function() {
   return del.sync([
-    paths.appJs + '/**', '!' + removeEndSlash(paths.appJs),
-    paths.srcTsTmp + '/**', '!' + removeEndSlash(paths.srcTsTmp)
+    //paths.appJs + '/**', '!' + removeEndSlash(paths.appJs)
+    paths.srcJs + '/' + paths.srcTsJsBundleName
   ]);
 });
+
 gulp.task('clean-js', function() {
   return del.sync([
     paths.appJs + '/**', '!' + removeEndSlash(paths.appJs)
+  ]);
+});
+
+gulp.task('clean-sass', function() {
+  return del.sync([
+    paths.srcCss + '/' + paths.srcSassCssBundleName
   ]);
 });
 
@@ -94,13 +108,12 @@ gulp.task('copylibs', function () {
 
 gulp.task('pack-js', function() {
   return gulp
-    .src(paths.srcJsFiles)
+    .src(paths.srcJs + '**/*.js')
     .pipe(sourcemaps.init())
     .pipe(concat(paths.appJsBundleName))
     .pipe(uglify())
     .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest(paths.appJs));
-
 });
 
 gulp.task("seq-run-tscript", function () {
@@ -160,16 +173,53 @@ gulp.task("seq-run-tscript", function () {
 //    .pipe(sourcemaps.init({loadMaps: false}))
 //    .pipe(uglify())
 //    .pipe(sourcemaps.write('./'))
-    .pipe(gulp.dest(paths.srcTsTmp));
+    .pipe(gulp.dest(paths.srcJs));
 });
 
-gulp.task("typescript", ['clean-ts'], function () {
+gulp.task("typescript", ['clean-ts', 'clean-js'], function () {
   runSequence('seq-run-tscript', 'pack-js');
+});
+
+
+gulp.task('pack-css', function() {
+  return gulp
+    .src(paths.srcCss + '**/*.css')
+    .pipe(sourcemaps.init())
+    .pipe(concat(paths.appCssBundleName))
+    .pipe(minifyCss({
+      keepSpecialComments: 0
+    }))
+    .pipe(sourcemaps.write('./'))
+    .pipe(gulp.dest(paths.appCss));
+});
+
+gulp.task("seq-run-sass", function () {
+  gulp.src([paths.srcSass + '**/*.scss', '!' + paths.srcSass + '**/_*.scss'])
+    .pipe(sass().on('error', sass.logError))
+    .pipe(gulp.dest(paths.srcCss));
+//    .pipe(gulpCompass({
+//      'logger' : true // show progress of compile
+//    }));
+});
+
+gulp.task('sass', function() {
+  runSequence('seq-run-sass', 'pack-css');
+
+
+//    .pipe(minifyCss({
+//      keepSpecialComments: 0
+//    }))
+//    .pipe(rename({ extname: '.min.css' }))
+//    .pipe(gulp.dest('./www/css/'))
+//    .on('end', done);
 });
 
 gulp.task('watch', function() {
   gulp.watch(paths.srcTs + '**/*.ts', ['typescript']);
   gulp.watch(paths.srcJs + '**/*.js', ['clean-js', 'pack-js']);
+
+  gulp.watch(paths.srcSass + '**/*.scss', ['sass']);
+
   gulp.watch(paths.appCss + '**/*.css', ['css']);
   gulp.watch(paths.app + '**/*.html', ['html']);
 });
@@ -187,6 +237,6 @@ gulp.task('webserver', function () {
 //gulp.task('default', ['copylibs', 'typescript']);
 //gulp.task('default', ['copylibs', 'watch', 'webserver']);
 gulp.task('default', function() {
-  runSequence('clean-ts', 'copylibs', 'typescript', 'watch', 'webserver');
+  runSequence('clean-ts', 'copylibs', 'typescript', 'sass', 'watch', 'webserver');
 });
 //gulp.task('default', ['copylibs', 'typescript', 'watch', 'webserver']);
