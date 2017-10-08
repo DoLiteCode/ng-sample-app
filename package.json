@@ -7,29 +7,20 @@
     "type": "git",
     "url": "https://github.com/shadow-coder/ng-sample-app.git"
   },
-  "scripts": {
-    "test": "ng test",
-    "start": "ng start"
-  },
   "author": "Shakil Hossain",
   "license": "GPL-3.0",
   "devDependencies": {
-    "babel-preset-es2015": "^6.24.1",
-    "babelify": "^7.3.0",
-    "browserify": "^14.4.0",
+    "common": "^0.2.5",
     "del": "^3.0.0",
     "gulp": "^3.9.1",
-    "gulp-concat": "^2.6.1",
-    "gulp-minify-css": "^1.2.4",
+    "gulp-clean-css": "^3.9.0",
+    "gulp-imagemin": "^3.4.0",
+    "gulp-rename": "^1.2.2",
     "gulp-sass": "^3.1.0",
     "gulp-sourcemaps": "^2.6.1",
     "gulp-typescript": "^3.2.2",
     "gulp-uglify": "^3.0.0",
     "gulp-webserver": "^0.9.1",
-    "run-sequence": "^2.1.0",
-    "tsify": "^3.0.1",
-    "typescript": "^2.4.2",
-    "vinyl-buffer": "^1.0.0",
-    "vinyl-source-stream": "^1.1.0"
+    "typescript": "^2.5.3"
   }
 }

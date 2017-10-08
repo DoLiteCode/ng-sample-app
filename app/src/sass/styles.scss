@@ -1,6 +1,5 @@
 @import "partials/variables";
 @import "partials/normalize";
-
 * {
   //@include box-sizing(border-box);
 }
@@ -13,8 +12,14 @@
       color: $orange;
     }
   }
-
-  h1 {
+  h1,
+  h2 {
     margin: 0px;
+  }
+  p {
+    padding: 0;
+  }
+  div {
+    float: none;
   }
 }

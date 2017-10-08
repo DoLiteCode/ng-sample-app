@@ -1,7 +1,19 @@
 {
+  "filesGlob": [
+    "./src/typescript/**/*.ts",
+    "!./node_modules/**/*.ts"
+  ],
   "compilerOptions": {
     "target": "es5",
-    "noImplicitAny": true
+    "module": "system",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "lib": ["es2015", "dom"],
+    "noImplicitAny": true,
+    "removeComments": false,
+    "suppressImplicitAnyIndexErrors": true
   },
   "exclude": [
     "node_modules"
