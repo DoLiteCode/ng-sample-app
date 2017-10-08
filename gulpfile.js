@@ -20,6 +20,7 @@ path.app = path.root + 'app/';
 
 path.build = path.app + 'build/';
 path.buildJs = path.build + 'js/';
+path.buildNgJs = path.buildJs + 'ng/';
 path.buildCss = path.build + 'css/';
 path.buildImg = path.build + 'images/';
 
@@ -75,6 +76,8 @@ gulpObj.cssMinifier = function() {
 };
 
 gulpObj.jsMinifier = function() {
+  return false;
+
   return gulp
     .src([path.buildJs + '**/*.js', '!' + path.buildJs + '**/*.min.js'])
     //.pipe(sourcemaps.init())
@@ -138,6 +141,7 @@ gulp.task('typescript', function() {
 });
 
 gulp.task('javascript', function() {
+
   return gulp.src(path.srcJs + '**/*.js')
     .pipe(gulp.dest(path.buildJs))
     .on('end', gulpObj.jsMinifier);
@@ -161,9 +165,21 @@ gulp.task('image-minify', function() {
 gulp.task('copylibs', function() {
   return gulp
     .src([
-      'node_modules/common/common.min.js'
+      'node_modules/core-js/client/shim.min.js',
+      'node_modules/zone.js/dist/zone.js',
+      'node_modules/systemjs/dist/system.src.js'
+      /*,
+           'node_modules/@angular/core/bundles/core.umd.js',
+           'node_modules/@angular/common/bundles/common.umd.js',
+           'node_modules/@angular/compiler/bundles/compiler.umd.js',
+           'node_modules/@angular/platform-browser/bundles/platform-browser.umd.js',
+           'node_modules/@angular/platform-browser-dynamic/bundles/platform-browser-dynamic.umd.js',
+           'node_modules/@angular/http/bundles/http.umd.js',
+           'node_modules/@angular/router/bundles/router.umd.js',
+           'node_modules/@angular/forms/bundles/forms.umd.js',
+           'node_modules/rxjs/bundles/Rx.js'*/
     ])
-    .pipe(gulp.dest(path.buildJs));
+    .pipe(gulp.dest(path.buildNgJs));
 });
 
 gulp.task('watch', function() {
@@ -175,6 +191,7 @@ gulp.task('watch', function() {
   gulp.watch(path.app + '**/*.html', ['html']);
 });
 
+
 gulp.task('webserver', function() {
   gulp.src(path.app)
     .pipe(webserver({
@@ -183,6 +200,7 @@ gulp.task('webserver', function() {
       port: 8000
     }));
 });
+
 
 /*gulp.task('default', function() {
   runSequence('clean-css', 'typescript', 'sass', 'css', 'watch', 'webserver');

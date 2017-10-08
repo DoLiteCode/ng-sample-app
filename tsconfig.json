@@ -3,6 +3,7 @@
     "./src/typescript/**/*.ts",
     "!./node_modules/**/*.ts"
   ],
+  "compileOnSave": true,
   "compilerOptions": {
     "target": "es5",
     "module": "system",
