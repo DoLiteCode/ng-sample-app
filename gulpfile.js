@@ -20,7 +20,8 @@ path.app = path.root + 'app/';
 
 path.build = path.app + 'build/';
 path.buildJs = path.build + 'js/';
-path.buildNgJs = path.buildJs + 'ng/';
+path.buildNgJs = path.app + 'node_modules/';
+//path.buildNodeModelues = path.app + 'node_modules/';
 path.buildCss = path.build + 'css/';
 path.buildImg = path.build + 'images/';
 
@@ -47,7 +48,8 @@ gulp.task('clean-css', function() {
 
 gulp.task('clean-js', function() {
   return del.sync([
-    path.buildJs + '/**', '!' + gulpObj.removeEndSlash(path.buildJs)
+    path.buildJs + '/**', '!' + gulpObj.removeEndSlash(path.buildJs),
+    path.buildNgJs + '/**', '!' + gulpObj.removeEndSlash(path.buildNgJs)
   ]);
 });
 
@@ -163,23 +165,74 @@ gulp.task('image-minify', function() {
     .pipe(gulp.dest(path.buildImg));
 });
 gulp.task('copylibs', function() {
+  /*
   return gulp
     .src([
       'node_modules/core-js/client/shim.min.js',
       'node_modules/zone.js/dist/zone.js',
-      'node_modules/systemjs/dist/system.src.js'
-      /*,
-           'node_modules/@angular/core/bundles/core.umd.js',
-           'node_modules/@angular/common/bundles/common.umd.js',
-           'node_modules/@angular/compiler/bundles/compiler.umd.js',
-           'node_modules/@angular/platform-browser/bundles/platform-browser.umd.js',
-           'node_modules/@angular/platform-browser-dynamic/bundles/platform-browser-dynamic.umd.js',
-           'node_modules/@angular/http/bundles/http.umd.js',
-           'node_modules/@angular/router/bundles/router.umd.js',
-           'node_modules/@angular/forms/bundles/forms.umd.js',
-           'node_modules/rxjs/bundles/Rx.js'*/
+      'node_modules/systemjs/dist/system.src.js',
+      'node_modules/@angular/core/bundles/core.umd.js',
+      'node_modules/@angular/common/bundles/common.umd.js',
+      'node_modules/@angular/compiler/bundles/compiler.umd.js',
+      'node_modules/@angular/platform-browser/bundles/platform-browser.umd.js',
+      'node_modules/@angular/platform-browser-dynamic/bundles/platform-browser-dynamic.umd.js',
+      'node_modules/@angular/http/bundles/http.umd.js',
+      'node_modules/@angular/router/bundles/router.umd.js',
+      'node_modules/@angular/forms/bundles/forms.umd.js',
+      'node_modules/rxjs/bundles/Rx.js',
+      'node_modules/angular-in-memory-web-api/bundles/in-memory-web-api.umd.js'
     ])
     .pipe(gulp.dest(path.buildNgJs));
+*/
+
+  gulp.src([
+      'node_modules/core-js/client/shim.min.js',
+      'node_modules/zone.js/dist/zone.js',
+      'node_modules/systemjs/dist/system.src.js'
+    ])
+    .pipe(gulp.dest(path.buildJs));
+  /*
+  gulp.src([
+      'node_modules/@angular/**'
+    ])
+    .pipe(gulp.dest(path.buildNgJs + '@angular'));
+
+
+  gulp.src([
+      'node_modules/angular-in-memory-web-api/**'
+    ])
+    .pipe(gulp.dest(path.buildNgJs + 'angular-in-memory-web-api'));
+
+  gulp.src([
+      'node_modules/rxjs/**'
+    ])
+    .pipe(gulp.dest(path.buildNgJs + 'rxjs'));
+  */
+
+  gulp
+    .src([
+      'node_modules/@angular/core/bundles/core.umd.js',
+      'node_modules/@angular/common/bundles/common.umd.js',
+      'node_modules/@angular/compiler/bundles/compiler.umd.js',
+      'node_modules/@angular/platform-browser/bundles/platform-browser.umd.js',
+      'node_modules/@angular/platform-browser-dynamic/bundles/platform-browser-dynamic.umd.js',
+      'node_modules/@angular/http/bundles/http.umd.js',
+      'node_modules/@angular/router/bundles/router.umd.js',
+      'node_modules/@angular/forms/bundles/forms.umd.js',
+      'node_modules/angular-in-memory-web-api/bundles/in-memory-web-api.umd.js'
+    ])
+    .pipe(gulp.dest(path.buildNgJs + '@angular/'));
+  /*
+    gulp.src([
+        'node_modules/angular-in-memory-web-api/**'
+      ])
+      .pipe(gulp.dest(path.buildNgJs + 'angular-in-memory-web-api'));
+    */
+  gulp.src([
+      'node_modules/rxjs/**'
+    ])
+    .pipe(gulp.dest(path.buildNgJs + 'rxjs'));
+
 });
 
 gulp.task('watch', function() {
@@ -193,12 +246,15 @@ gulp.task('watch', function() {
 
 
 gulp.task('webserver', function() {
+  //return false;
+  //path.app
   gulp.src(path.app)
     .pipe(webserver({
       liveload: true,
       open: false,
       port: 8000
     }));
+
 });
 
 

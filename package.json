@@ -8,11 +8,14 @@
     "url": "https://github.com/shadow-coder/ng-sample-app.git"
   },
   "scripts": {
-    "start": "gulp"
+    "build:watch": "tsc -p app/ -w",
+    "run:gulp": "gulp",
+    "start": "concurrently \"npm run run:gulp\""
   },
   "author": "Shakil Hossain",
   "license": "GPL-3.0",
   "devDependencies": {
+    "concurrently": "^3.5.0",
     "del": "^3.0.0",
     "gulp": "^3.9.1",
     "gulp-clean-css": "^3.9.0",
@@ -26,6 +29,7 @@
     "typescript": "^2.5.3"
   },
   "dependencies": {
+    "@angular/animations": "^4.4.4",
     "@angular/common": "^4.4.4",
     "@angular/compiler": "^4.4.4",
     "@angular/core": "^4.4.4",
