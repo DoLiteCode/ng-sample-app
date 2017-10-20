@@ -22,7 +22,7 @@
         
     if (typeof fileref != "undefined") document.getElementsByTagName("head")[0].appendChild(fileref);
 
-    if (filetype == "js") { //if filename is a external JavaScript file
+    if (filetype == "js" || filetype == "css") { //if filename is a external JavaScript file
       if (fileref.readyState) {
         // If the bectool-rowser is Internet Explorer.
         fileref.onreadystatechange = function() {
@@ -38,6 +38,7 @@
         }; // end function
       }
     }
+
 
 
   }; // end function
@@ -135,7 +136,9 @@
     buildCssDir = buildDir + 'css/',
     buildJsDir = buildDir + 'js/';
 
-  loadScript(buildCssDir + 'main.min.css', 'css');
+  loadScript(buildCssDir + 'main.min.css', 'css', function() {
+    loadScript(buildCssDir + 'styles.min.css', 'css', function() {});
+  });
 
   loadScript(buildJsDir + 'shim.min.js', 'js', function() {
     loadScript(buildJsDir + 'zone.js', 'js', function() {

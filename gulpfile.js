@@ -1,13 +1,15 @@
 var gulp = require('gulp'),
   webserver = require('gulp-webserver'),
   sourcemaps = require('gulp-sourcemaps'),
-  sass = require('gulp-sass'),
+  // sass = require('gulp-sass'),
   cleanCSS = require('gulp-clean-css'),
   del = require('del'),
   rename = require('gulp-rename'),
   uglify = require('gulp-uglify'),
   typescript = require('gulp-typescript'),
-  imagemin = require('gulp-imagemin');
+  imagemin = require('gulp-imagemin'),
+  concat = require('gulp-concat'),
+  compass = require('gulp-compass');
 
 
 var path = {},
@@ -24,6 +26,10 @@ path.buildNgJs = path.app + 'node_modules/';
 //path.buildNodeModelues = path.app + 'node_modules/';
 path.buildCss = path.build + 'css/';
 path.buildImg = path.build + 'images/';
+
+path.buildJsBundleName = 'build-scripts.min.js';
+path.buildCssBundleName = 'build-styles.min.css';
+
 
 path.src = path.app + 'src/';
 path.srcTs = path.src + 'typescript/';
@@ -57,9 +63,28 @@ gulp.task('html', function() {
   gulp.src(path.app + '**/*.html');
 });
 
-gulpObj.cssMinifier = function() {
+gulpObj.cssCombinedAndMinify = function() {
   return gulp
-    .src([path.buildCss + '**/*.css', '!' + path.buildCss + '**/*.min.css'])
+    .src([path.buildCss + '**/*.css', '!' + path.buildCss + '**/*.min.css', '!' + path.buildJs + '**/' + path.buildCssBundleName])
+    //.pipe(sourcemaps.init())
+    .pipe(concat(path.buildCssBundleName))
+    .pipe(
+      cleanCSS({
+        compatibility: 'ie8',
+        debug: true
+      }, function(details) {
+        console.log(details.name + ': ' + details.stats.originalSize);
+        console.log(details.name + ': ' + details.stats.minifiedSize);
+      })
+    )
+    //.pipe(sourcemaps.write('./'))
+    .pipe(gulp.dest(path.buildCss));
+};
+
+gulpObj.cssMinifier = function() {
+  gulpObj.cssCombinedAndMinify();
+  return gulp
+    .src([path.buildCss + '**/*.css', '!' + path.buildCss + '**/*.min.css', '!' + path.buildJs + '**/' + path.buildCssBundleName])
     //.pipe(sourcemaps.init())
     .pipe(
       cleanCSS({
@@ -77,11 +102,25 @@ gulpObj.cssMinifier = function() {
     .pipe(gulp.dest(path.buildCss));
 };
 
-gulpObj.jsMinifier = function() {
-  return false;
-
+gulpObj.jsCombinedAndMinify = function() {
   return gulp
-    .src([path.buildJs + '**/*.js', '!' + path.buildJs + '**/*.min.js'])
+    .src([path.buildJs + '**/*.js', '!' + path.buildJs + '**/*.min.js', '!' + path.buildJs + '**/' + path.buildJsBundleName])
+    //.pipe(sourcemaps.init())
+    .pipe(concat(path.buildJsBundleName))
+    .pipe(uglify({
+      compress: {},
+      toplevel: true,
+      ie8: true
+    }))
+    //.pipe(sourcemaps.write('./'))
+    .pipe(gulp.dest(path.buildJs));
+};
+
+gulpObj.jsMinifier = function() {
+  //return false;
+  gulpObj.jsCombinedAndMinify();
+  return gulp
+    .src([path.buildJs + '**/*.js', '!' + path.buildJs + '**/*.min.js', '!' + path.buildJs + '**/' + path.buildJsBundleName])
     //.pipe(sourcemaps.init())
     .pipe(uglify({
       compress: {},
@@ -102,13 +141,32 @@ gulp.task('css', function() {
     .on('end', gulpObj.cssMinifier);
 });
 
-gulp.task('sass', function() {
-  return gulp.src([path.srcSass + '**/*.scss', '!' + path.srcSass + '**/_*.scss'])
-    .pipe(sourcemaps.init())
-    .pipe(sass().on('error', sass.logError))
-    .pipe(sourcemaps.write('./'))
+// gulp.task('sass', function() {
+//  return gulp.src([path.srcSass + '**/*.scss', '!' + path.srcSass + '**/_*.scss'])
+//    .pipe(sourcemaps.init())
+//    .pipe(sass().on('error', sass.logError))
+//    .pipe(sourcemaps.write('./'))
+//    .pipe(gulp.dest(path.buildCss))
+//    .on('end', gulpObj.cssMinifier);
+// });
+
+
+gulp.task('compass', function() {
+  gulp.src([path.srcSass + '**/*.scss', '!' + path.srcSass + '**/_*.scss'])
+    .pipe(compass({
+      css: path.buildCss,
+      sass: path.srcSass
+        //image: path.buildImg
+        //require: ['susy', 'modular-scale']
+    }))
+    .on('error', function(error) {
+      // Would like to catch the error here
+      console.log(error);
+      this.emit('end');
+    })
     .pipe(gulp.dest(path.buildCss))
     .on('end', gulpObj.cssMinifier);
+
 });
 
 gulp.task('typescript', function() {
@@ -238,7 +296,7 @@ gulp.task('copylibs', function() {
 gulp.task('watch', function() {
   gulp.watch(path.srcTs + '**/*.ts', ['typescript']);
   gulp.watch(path.srcJs + '**/*.js', ['javascript']);
-  gulp.watch(path.srcSass + '**/*.scss', ['sass']);
+  gulp.watch(path.srcSass + '**/*.scss', ['compass']);
   gulp.watch(path.srcCss + '**/*.css', ['css']);
   gulp.watch(path.srcImg + '**/*', ['image-minify']);
   gulp.watch(path.app + '**/*.html', ['html']);
@@ -262,4 +320,4 @@ gulp.task('webserver', function() {
   runSequence('clean-css', 'typescript', 'sass', 'css', 'watch', 'webserver');
 });*/
 
-gulp.task('default', ['clean-css', 'clean-js', 'copylibs', 'sass', 'css', 'javascript', 'typescript', 'image-minify', 'watch', 'webserver']);
+gulp.task('default', ['clean-css', 'clean-js', 'copylibs', 'compass', 'css', 'javascript', 'typescript', 'image-minify', 'watch', 'webserver']);

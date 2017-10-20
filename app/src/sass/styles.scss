@@ -1,7 +1,8 @@
+@import "compass";
 @import "partials/variables";
 @import "partials/normalize";
 * {
-  //@include box-sizing(border-box);
+  @include box-sizing(border-box);
 }
 
 #main-wrap {
@@ -22,4 +23,8 @@
   div {
     float: none;
   }
+}
+
+#div5:hover {
+  @include transform(translateY(50%) scale(0.5));
 }
