@@ -5,7 +5,7 @@
 /tmp
 /app/**/*.js
 /app/**/*.js.map
-package-lock.json
+/package-lock.json
 
 # dependencies
 /node_modules
